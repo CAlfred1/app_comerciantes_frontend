@@ -1,0 +1,119 @@
+<div class="card shadow-sm mt-2">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="card-title text-primary mb-0">SOCIOS</h3>
+      <button class="btn btn-primary" (click)="abrirFormularioNuevo()">+ Registrar Socio</button>
+    </div>
+
+    @if (exito) {
+      <div class="alert alert-success alert-dismissible" role="alert">
+        {{ exito }}
+        <button type="button" class="btn-close" (click)="exito = ''"></button>
+      </div>
+    }
+    @if (error) {
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+    }
+    @if (cargando) {
+      <div class="alert alert-info">Cargando socios...</div>
+    }
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-secondary">
+          <tr>
+            <th>#</th>
+            <th>NOMBRE</th>
+            <th>DNI</th>
+            <th>TELÉFONO</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (socio of socios; track socio.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ socio.nombre }}</td>
+              <td>{{ socio.dni }}</td>
+              <td>{{ socio.telefono }}</td>
+              <td>
+                <span class="badge" [class.bg-success]="socio.estado" [class.bg-secondary]="!socio.estado">
+                  {{ socio.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-warning me-1" (click)="abrirFormularioEditar(socio)">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="abrirConfirmarEliminar(socio.id)">Eliminar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted">No hay socios registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@if (mostrarConfirmarEliminar) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmar eliminación</h5>
+          <button type="button" class="btn-close" [disabled]="enviando" (click)="cerrarConfirmarEliminar()"></button>
+        </div>
+        <div class="modal-body">
+          ¿Deseas eliminar este socio?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="enviando" (click)="cerrarConfirmarEliminar()">Cancelar</button>
+          <button type="button" class="btn btn-danger" [disabled]="enviando" (click)="confirmarEliminar()">
+            {{ enviando ? 'Eliminando...' : 'Eliminar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
+
+@if (mostrarFormulario) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">{{ editando ? 'Editar Socio' : 'Registrar Socio' }}</h5>
+          <button type="button" class="btn-close btn-close-white" [disabled]="enviando" (click)="cerrarFormulario()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" [(ngModel)]="form.nombre" placeholder="Nombre completo" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">DNI</label>
+            <input type="text" class="form-control" [(ngModel)]="form.dni" placeholder="Número de DNI" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" [(ngModel)]="form.telefono" placeholder="Número de teléfono" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="enviando" (click)="cerrarFormulario()">Cancelar</button>
+          <button type="button" class="btn btn-primary" [disabled]="enviando" (click)="guardar()">
+            {{ enviando ? 'Guardando...' : (editando ? 'Actualizar' : 'Registrar') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

@@ -1,0 +1,137 @@
+<div class="card shadow-sm mt-2">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="card-title text-primary mb-0">PUESTOS</h3>
+      <button class="btn btn-primary" (click)="abrirFormularioNuevo()">+ Registrar Puesto</button>
+    </div>
+
+    @if (exito) {
+      <div class="alert alert-success alert-dismissible" role="alert">
+        {{ exito }}
+        <button type="button" class="btn-close" (click)="exito = ''"></button>
+      </div>
+    }
+    @if (error) {
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+    }
+    @if (cargando) {
+      <div class="alert alert-info">Cargando puestos...</div>
+    }
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-secondary">
+          <tr>
+            <th>#</th>
+            <th>CÓDIGO</th>
+            <th>DESCRIPCIÓN</th>
+            <th>ES PROPIEDAD</th>
+            <th>SOCIO</th>
+            <th>ESTADO</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (puesto of puestos; track puesto.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ puesto.codigo }}</td>
+              <td>{{ puesto.descripcion }}</td>
+              <td>
+                <span class="badge" [class.bg-info]="puesto.esPropiedad" [class.bg-warning]="!puesto.esPropiedad">
+                  {{ puesto.esPropiedad ? 'Propio' : 'Alquilado' }}
+                </span>
+              </td>
+              <td>{{ puesto.socio?.nombre ?? '—' }}</td>
+              <td>
+                <span class="badge" [class.bg-success]="puesto.estado" [class.bg-secondary]="!puesto.estado">
+                  {{ puesto.estado ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-warning me-1" (click)="abrirFormularioEditar(puesto)">Editar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="abrirConfirmarEliminar(puesto.id)">Eliminar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted">No hay puestos registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@if (mostrarConfirmarEliminar) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmar eliminación</h5>
+          <button type="button" class="btn-close" [disabled]="enviando" (click)="cerrarConfirmarEliminar()"></button>
+        </div>
+        <div class="modal-body">
+          ¿Deseas eliminar este puesto?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="enviando" (click)="cerrarConfirmarEliminar()">Cancelar</button>
+          <button type="button" class="btn btn-danger" [disabled]="enviando" (click)="confirmarEliminar()">
+            {{ enviando ? 'Eliminando...' : 'Eliminar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
+
+@if (mostrarFormulario) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">{{ editando ? 'Editar Puesto' : 'Registrar Puesto' }}</h5>
+          <button type="button" class="btn-close btn-close-white" [disabled]="enviando" (click)="cerrarFormulario()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Código</label>
+            <input type="text" class="form-control" [(ngModel)]="form.codigo" placeholder="Código del puesto" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <input type="text" class="form-control" [(ngModel)]="form.descripcion" placeholder="Descripción del puesto" />
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="esPropiedadCheck" [(ngModel)]="form.esPropiedad" />
+            <label class="form-check-label" for="esPropiedadCheck">Es propiedad propia</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Socio (opcional)</label>
+            <ng-select
+              [items]="socios"
+              bindLabel="nombre"
+              bindValue="id"
+              placeholder="Seleccionar socio"
+              [searchable]="true"
+              [clearable]="true"
+              [(ngModel)]="form.idSocio">
+            </ng-select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="enviando" (click)="cerrarFormulario()">Cancelar</button>
+          <button type="button" class="btn btn-primary" [disabled]="enviando" (click)="guardar()">
+            {{ enviando ? 'Guardando...' : (editando ? 'Actualizar' : 'Registrar') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
