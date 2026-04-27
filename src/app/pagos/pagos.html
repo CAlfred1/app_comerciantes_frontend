@@ -1,0 +1,155 @@
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title text-primary">FORMULARIO PAGO</h3>
+      <p class="card-text">PAGO</p>
+      <div class="row">
+        <div class="col-lg-4 mb-1">
+          <p>CLIENTE</p>
+        </div>
+        <div class="col-lg-4 mb-1">
+          <p>FECHA DE PAGO</p>
+        </div>
+        <div class="col-lg-4 mb-1"></div>
+
+        <div class="col-lg-4 mb-1">
+          <ng-select
+            [items]="clientes"
+            bindLabel="nombre"
+            bindValue="id"
+            placeholder="Buscar cliente"
+            [searchable]="true"
+            [clearable]="true"
+            [(ngModel)]="clienteSeleccionado">
+          </ng-select>
+        </div>
+        <div class="col-lg-4 mb-1">
+          <input type="date" class="form-control" [(ngModel)]="fechaPago" />
+        </div>
+        <div class="col-lg-4 mb-1"></div>
+
+        <div class="col-lg-4 mb-1">
+          <p>MONTO ACUMULADO</p>
+        </div>
+        <div class="col-lg-4 mb-1">
+          <p>METODO PAGO</p>
+        </div>
+        <div class="col-lg-4 mb-1"></div>
+        <div class="col-lg-4 mb-1">
+          <input class="form-control input-disabled" [(ngModel)]="montoAcumulado" readonly />
+        </div>
+        <div class="col-lg-4">
+          <select class="form-select" [(ngModel)]="metodoPagoSeleccionado">
+            <option [ngValue]="null">Seleccione un metodo</option>
+            @for (metodo of metodosPago; track metodo.id) {
+              <option [ngValue]="metodo.id">{{ metodo.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive mt-4">
+        <div class="small text-muted mb-2">
+          Registros cargados: {{ comprobantes.length }}
+        </div>
+
+        @if (cargandoComprobantes) {
+          <div class="alert alert-info mb-3" role="alert">
+            Cargando comprobantes...
+          </div>
+        }
+
+        @if (errorComprobantes) {
+          <div class="alert alert-danger mb-3" role="alert">
+            {{ errorComprobantes }}
+          </div>
+        }
+
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th></th>
+              <th>FECHA</th>
+              <th>NRO. COMPROBANTE</th>
+              <th>DESCRIPCION</th>
+              <th>MONTO</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (comprobante of comprobantes; track comprobante.id) {
+              <tr>
+                <td>
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="comprobante.seleccionado"
+                    (ngModelChange)="actualizarMontoAcumulado()"
+                  />
+                </td>
+                <td>{{ comprobante.fecha | date:'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ comprobante.numero }}</td>
+                <td>{{ comprobante.tipo }}</td>
+                <td>{{ comprobante.total }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <button
+        class="btn btn-success"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#confirmarPagoModal">
+        Guardar
+      </button>
+      <button class="btn btn-outline-success">Ir a Inicio</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="confirmarPagoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar pago</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        Deseas guardar este pago?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          data-bs-dismiss="modal"
+          (click)="guardarPago()">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (mostrarExitoGuardado) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">Pago registrado</h5>
+        </div>
+        <div class="modal-body">
+          Se guardo correctamente.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" (click)="cerrarMensajeExito()">
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
