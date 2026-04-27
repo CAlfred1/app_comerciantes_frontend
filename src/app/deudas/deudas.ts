@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 type EstadoDeuda = 'PENDIENTE' | 'PAGADA';
 
@@ -17,7 +18,8 @@ interface PuestoResumen {
   codigo: string;
   descripcion: string;
   estado: boolean;
-  esPropiedadAsociacion: boolean;
+  esPropiedadAsociacion?: boolean;
+  esPropiedad?: boolean;
 }
 
 interface MotivoResumen {
@@ -29,6 +31,28 @@ interface LoteResumen {
   id: number;
   descripcion: string;
   fecha: string;
+}
+
+interface SocioOption {
+  id: number;
+  etiqueta: string;
+}
+
+interface PuestoOption {
+  id: number;
+  etiqueta: string;
+}
+
+interface MotivoOption {
+  id: number;
+  descripcion: string;
+}
+
+interface LoteOption {
+  id: number;
+  descripcion: string;
+  fecha: string;
+  etiqueta: string;
 }
 
 interface DeudaResponse {
@@ -57,7 +81,7 @@ interface DeudaRequest {
 
 @Component({
   selector: 'app-deudas',
-  imports: [FormsModule],
+  imports: [FormsModule, NgSelectComponent],
   templateUrl: './deudas.html',
   styleUrl: './deudas.css',
 })
@@ -65,8 +89,20 @@ export class DeudasComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly baseUrl = 'http://localhost:9090/deudas';
+  private readonly sociosUrl = 'http://localhost:9090/socios';
+  private readonly puestosUrl = 'http://localhost:9090/api/puestos';
+  private readonly motivosUrl = 'http://localhost:9090/motivos';
+  private readonly lotesUrl = 'http://localhost:9090/lotes';
 
   deudas: DeudaResponse[] = [];
+  filtroBusqueda = '';
+  tamanosPagina = [5, 10, 20];
+  tamanoPagina = 5;
+  paginaActual = 1;
+  sociosOpciones: SocioOption[] = [];
+  puestosOpciones: PuestoOption[] = [];
+  motivosOpciones: MotivoOption[] = [];
+  lotesOpciones: LoteOption[] = [];
   cargando = false;
   enviando = false;
   error = '';
@@ -82,6 +118,7 @@ export class DeudasComponent implements OnInit {
   form: DeudaRequest = this.getFormInicial();
 
   ngOnInit(): void {
+    this.cargarCatalogos();
     this.listar();
   }
 
@@ -90,6 +127,8 @@ export class DeudasComponent implements OnInit {
     this.http.get<DeudaResponse[]>(this.baseUrl).subscribe({
       next: (data) => {
         this.deudas = data;
+        this.actualizarCatalogosDesdeDeudas(data);
+        this.paginaActual = 1;
         this.cargando = false;
         this.cdr.detectChanges();
       },
@@ -99,16 +138,64 @@ export class DeudasComponent implements OnInit {
         } else {
           this.error = 'No se pudo cargar la lista de deudas.';
         }
+        this.paginaActual = 1;
         this.cargando = false;
         this.cdr.detectChanges();
       },
     });
   }
 
+  get deudasFiltradas(): DeudaResponse[] {
+    const termino = this.filtroBusqueda.trim().toLowerCase();
+    if (!termino) return this.deudas;
+
+    return this.deudas.filter((deuda) => {
+      const socioTexto = deuda.socio.nombre.toLowerCase();
+      const puestoTexto = `${deuda.puesto.codigo} ${deuda.puesto.descripcion}`.toLowerCase();
+      return socioTexto.includes(termino) || puestoTexto.includes(termino);
+    });
+  }
+
+  get deudasPaginadas(): DeudaResponse[] {
+    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+    return this.deudasFiltradas.slice(inicio, inicio + this.tamanoPagina);
+  }
+
+  get totalPaginas(): number {
+    const total = Math.ceil(this.deudasFiltradas.length / this.tamanoPagina);
+    return total > 0 ? total : 1;
+  }
+
+  aplicarFiltros(): void {
+    this.paginaActual = 1;
+  }
+
+  cambiarTamanoPagina(): void {
+    this.paginaActual = 1;
+  }
+
+  limpiarFiltro(): void {
+    this.filtroBusqueda = '';
+    this.paginaActual = 1;
+  }
+
+  irPaginaAnterior(): void {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
+    }
+  }
+
+  irPaginaSiguiente(): void {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+    }
+  }
+
   abrirFormularioNuevo(): void {
     this.editando = false;
     this.deudaEditandoId = null;
     this.form = this.getFormInicial();
+    this.cargarCatalogos();
     this.error = '';
     this.exito = '';
     this.enviando = false;
@@ -124,6 +211,7 @@ export class DeudasComponent implements OnInit {
 
     this.http.get<DeudaResponse>(`${this.baseUrl}/${id}`).subscribe({
       next: (deuda) => {
+        this.asegurarOpcionesDesdeDeuda(deuda);
         this.editando = true;
         this.deudaEditandoId = deuda.id;
         this.form = {
@@ -247,6 +335,144 @@ export class DeudasComponent implements OnInit {
 
   esDeudaPendiente(deuda: DeudaResponse): boolean {
     return deuda.estado === 'PENDIENTE';
+  }
+
+  private cargarCatalogos(): void {
+    this.cargarSocios();
+    this.cargarPuestos();
+    this.cargarMotivos();
+    this.cargarLotes();
+  }
+
+  private cargarSocios(): void {
+    this.http.get<SocioResumen[]>(this.sociosUrl).subscribe({
+      next: (data) => {
+        this.sociosOpciones = data.map((socio) => ({
+          id: socio.id,
+          etiqueta: `${socio.nombre} - DNI: ${socio.dni}`,
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.sociosOpciones = [];
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private cargarPuestos(): void {
+    this.http.get<PuestoResumen[]>(this.puestosUrl).subscribe({
+      next: (data) => {
+        this.puestosOpciones = data.map((puesto) => ({
+          id: puesto.id,
+          etiqueta: `${puesto.codigo} - ${puesto.descripcion}`,
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.puestosOpciones = [];
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private cargarMotivos(): void {
+    this.http.get<MotivoResumen[]>(this.motivosUrl).subscribe({
+      next: (data) => {
+        this.motivosOpciones = data.map((motivo) => ({
+          id: motivo.id,
+          descripcion: motivo.descripcion,
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private cargarLotes(): void {
+    this.http.get<LoteResumen[]>(this.lotesUrl).subscribe({
+      next: (data) => {
+        this.lotesOpciones = data.map((lote) => ({
+          id: lote.id,
+          descripcion: lote.descripcion,
+          fecha: lote.fecha,
+          etiqueta: `${lote.descripcion} - ${lote.fecha}`,
+        }));
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private actualizarCatalogosDesdeDeudas(data: DeudaResponse[]): void {
+    const motivosMap = new Map<number, MotivoOption>();
+    const lotesMap = new Map<number, LoteOption>();
+
+    for (const deuda of data) {
+      this.agregarSocioSiNoExiste(deuda.socio);
+      this.agregarPuestoSiNoExiste(deuda.puesto);
+
+      motivosMap.set(deuda.motivo.id, {
+        id: deuda.motivo.id,
+        descripcion: deuda.motivo.descripcion,
+      });
+
+      if (deuda.lote) {
+        lotesMap.set(deuda.lote.id, {
+          id: deuda.lote.id,
+          descripcion: deuda.lote.descripcion,
+          fecha: deuda.lote.fecha,
+          etiqueta: `${deuda.lote.descripcion} - ${deuda.lote.fecha}`,
+        });
+      }
+    }
+
+    this.motivosOpciones = [...motivosMap.values()];
+    this.lotesOpciones = [...lotesMap.values()];
+  }
+
+  private asegurarOpcionesDesdeDeuda(deuda: DeudaResponse): void {
+    this.agregarSocioSiNoExiste(deuda.socio);
+    this.agregarPuestoSiNoExiste(deuda.puesto);
+
+    if (!this.motivosOpciones.some((item) => item.id === deuda.motivo.id)) {
+      this.motivosOpciones = [
+        ...this.motivosOpciones,
+        { id: deuda.motivo.id, descripcion: deuda.motivo.descripcion },
+      ];
+    }
+
+    if (deuda.lote && !this.lotesOpciones.some((item) => item.id === deuda.lote?.id)) {
+      this.lotesOpciones = [
+        ...this.lotesOpciones,
+        {
+          id: deuda.lote.id,
+          descripcion: deuda.lote.descripcion,
+          fecha: deuda.lote.fecha,
+          etiqueta: `${deuda.lote.descripcion} - ${deuda.lote.fecha}`,
+        },
+      ];
+    }
+  }
+
+  private agregarSocioSiNoExiste(socio: SocioResumen): void {
+    if (this.sociosOpciones.some((item) => item.id === socio.id)) return;
+    this.sociosOpciones = [
+      ...this.sociosOpciones,
+      { id: socio.id, etiqueta: `${socio.nombre} - DNI: ${socio.dni}` },
+    ];
+  }
+
+  private agregarPuestoSiNoExiste(puesto: PuestoResumen): void {
+    if (this.puestosOpciones.some((item) => item.id === puesto.id)) return;
+    this.puestosOpciones = [
+      ...this.puestosOpciones,
+      { id: puesto.id, etiqueta: `${puesto.codigo} - ${puesto.descripcion}` },
+    ];
   }
 
   private esFormularioValido(): boolean {

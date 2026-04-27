@@ -21,6 +21,29 @@
       <div class="alert alert-info">Cargando deudas...</div>
     }
 
+    <div class="row g-2 mb-3">
+      <div class="col-md-7">
+        <label class="form-label mb-1">Buscar por socio o puesto</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="filtroBusqueda"
+          (ngModelChange)="aplicarFiltros()"
+          placeholder="Escribe nombre de socio o codigo/descripción de puesto" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1">Registros por página</label>
+        <select class="form-select" [(ngModel)]="tamanoPagina" (ngModelChange)="cambiarTamanoPagina()">
+          @for (tamano of tamanosPagina; track tamano) {
+            <option [ngValue]="tamano">{{ tamano }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltro()">Limpiar</button>
+      </div>
+    </div>
+
     <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle">
         <thead class="table-secondary">
@@ -37,9 +60,9 @@
           </tr>
         </thead>
         <tbody>
-          @for (deuda of deudas; track deuda.id; let i = $index) {
+          @for (deuda of deudasPaginadas; track deuda.id; let i = $index) {
             <tr>
-              <td>{{ i + 1 }}</td>
+              <td>{{ ((paginaActual - 1) * tamanoPagina) + i + 1 }}</td>
               <td>{{ deuda.socio.nombre }}</td>
               <td>{{ deuda.puesto.codigo }} - {{ deuda.puesto.descripcion }}</td>
               <td>{{ deuda.motivo.descripcion }}</td>
@@ -68,11 +91,31 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="9" class="text-center text-muted">No hay deudas registradas.</td>
+              <td colspan="9" class="text-center text-muted">No hay deudas que coincidan con la búsqueda.</td>
             </tr>
           }
         </tbody>
       </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="text-muted small">
+        Mostrando {{ deudasPaginadas.length }} de {{ deudasFiltradas.length }} registros
+      </span>
+      <div class="btn-group" role="group" aria-label="Paginacion deudas">
+        <button class="btn btn-outline-primary" [disabled]="paginaActual === 1" (click)="irPaginaAnterior()">
+          Anterior
+        </button>
+        <button class="btn btn-outline-secondary" disabled>
+          Página {{ paginaActual }} de {{ totalPaginas }}
+        </button>
+        <button
+          class="btn btn-outline-primary"
+          [disabled]="paginaActual >= totalPaginas"
+          (click)="irPaginaSiguiente()">
+          Siguiente
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -110,20 +153,52 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Id Socio</label>
-            <input type="number" class="form-control" [(ngModel)]="form.idSocio" placeholder="Id del socio" />
+            <label class="form-label">Socio</label>
+            <ng-select
+              [items]="sociosOpciones"
+              bindLabel="etiqueta"
+              bindValue="id"
+              placeholder="Selecciona un socio"
+              [searchable]="true"
+              [clearable]="false"
+              [(ngModel)]="form.idSocio">
+            </ng-select>
           </div>
           <div class="mb-3">
-            <label class="form-label">Id Puesto</label>
-            <input type="number" class="form-control" [(ngModel)]="form.idPuesto" placeholder="Id del puesto" />
+            <label class="form-label">Puesto</label>
+            <ng-select
+              [items]="puestosOpciones"
+              bindLabel="etiqueta"
+              bindValue="id"
+              placeholder="Selecciona un puesto"
+              [searchable]="true"
+              [clearable]="false"
+              [(ngModel)]="form.idPuesto">
+            </ng-select>
           </div>
           <div class="mb-3">
-            <label class="form-label">Id Motivo</label>
-            <input type="number" class="form-control" [(ngModel)]="form.idMotivo" placeholder="Id del motivo" />
+            <label class="form-label">Motivo</label>
+            <ng-select
+              [items]="motivosOpciones"
+              bindLabel="descripcion"
+              bindValue="id"
+              placeholder="Selecciona un motivo"
+              [searchable]="true"
+              [clearable]="false"
+              [(ngModel)]="form.idMotivo">
+            </ng-select>
           </div>
           <div class="mb-3">
-            <label class="form-label">Id Lote (opcional)</label>
-            <input type="number" class="form-control" [(ngModel)]="form.idLote" placeholder="Id del lote" />
+            <label class="form-label">Lote (opcional)</label>
+            <ng-select
+              [items]="lotesOpciones"
+              bindLabel="etiqueta"
+              bindValue="id"
+              placeholder="Selecciona un lote"
+              [searchable]="true"
+              [clearable]="true"
+              [(ngModel)]="form.idLote">
+            </ng-select>
           </div>
           <div class="mb-3">
             <label class="form-label">Monto</label>
