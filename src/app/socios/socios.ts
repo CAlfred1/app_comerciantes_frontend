@@ -25,9 +25,13 @@ interface SocioRequest {
 export class SociosComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly baseUrl = 'http://localhost:9090/api/socios';
+  private readonly baseUrl = 'http://localhost:9090/socios';
 
   socios: SocioResponse[] = [];
+  filtroBusqueda = '';
+  tamanosPagina = [5, 10, 20];
+  tamanoPagina = 5;
+  paginaActual = 1;
   cargando = false;
   enviando = false;
   error = '';
@@ -50,15 +54,64 @@ export class SociosComponent implements OnInit {
     this.http.get<SocioResponse[]>(this.baseUrl).subscribe({
       next: (data) => {
         this.socios = data;
+        this.paginaActual = 1;
         this.cargando = false;
         this.cdr.detectChanges();
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 404) this.socios = [];
+        this.paginaActual = 1;
         this.cargando = false;
         this.cdr.detectChanges();
       },
     });
+  }
+
+  get sociosFiltrados(): SocioResponse[] {
+    const termino = this.filtroBusqueda.trim().toLowerCase();
+    if (!termino) return this.socios;
+
+    return this.socios.filter(
+      (socio) =>
+        socio.nombre.toLowerCase().includes(termino) ||
+        socio.dni.toLowerCase().includes(termino) ||
+        socio.telefono.toLowerCase().includes(termino)
+    );
+  }
+
+  get sociosPaginados(): SocioResponse[] {
+    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+    return this.sociosFiltrados.slice(inicio, inicio + this.tamanoPagina);
+  }
+
+  get totalPaginas(): number {
+    const total = Math.ceil(this.sociosFiltrados.length / this.tamanoPagina);
+    return total > 0 ? total : 1;
+  }
+
+  aplicarFiltros(): void {
+    this.paginaActual = 1;
+  }
+
+  cambiarTamanoPagina(): void {
+    this.paginaActual = 1;
+  }
+
+  limpiarFiltros(): void {
+    this.filtroBusqueda = '';
+    this.paginaActual = 1;
+  }
+
+  irPaginaAnterior(): void {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
+    }
+  }
+
+  irPaginaSiguiente(): void {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+    }
   }
 
   abrirFormularioNuevo(): void {
@@ -159,4 +212,5 @@ export class SociosComponent implements OnInit {
       });
     }
   }
+
 }

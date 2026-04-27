@@ -1,0 +1,159 @@
+<div class="card shadow-sm mt-2">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="card-title text-primary mb-0">DEUDAS</h3>
+      <button class="btn btn-primary" (click)="abrirFormularioNuevo()">+ Registrar Deuda</button>
+    </div>
+
+    @if (exito) {
+      <div class="alert alert-success alert-dismissible" role="alert">
+        {{ exito }}
+        <button type="button" class="btn-close" (click)="exito = ''"></button>
+      </div>
+    }
+    @if (error) {
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+    }
+    @if (cargando) {
+      <div class="alert alert-info">Cargando deudas...</div>
+    }
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="table-secondary">
+          <tr>
+            <th>#</th>
+            <th>SOCIO</th>
+            <th>PUESTO</th>
+            <th>MOTIVO</th>
+            <th>MONTO</th>
+            <th>FECHA</th>
+            <th>ESTADO</th>
+            <th>FECHA PAGO</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (deuda of deudas; track deuda.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ deuda.socio.nombre }}</td>
+              <td>{{ deuda.puesto.codigo }} - {{ deuda.puesto.descripcion }}</td>
+              <td>{{ deuda.motivo.descripcion }}</td>
+              <td>{{ deuda.monto }}</td>
+              <td>{{ deuda.fecha }}</td>
+              <td>
+                <span class="badge" [class.bg-warning]="deuda.estado === 'PENDIENTE'" [class.bg-success]="deuda.estado === 'PAGADA'">
+                  {{ deuda.estado }}
+                </span>
+              </td>
+              <td>{{ deuda.fechaPago ?? '—' }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-outline-warning me-1"
+                  [disabled]="!esDeudaPendiente(deuda)"
+                  (click)="abrirFormularioEditar(deuda.id)">
+                  Editar
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  [disabled]="!esDeudaPendiente(deuda)"
+                  (click)="abrirConfirmarEliminar(deuda.id)">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="9" class="text-center text-muted">No hay deudas registradas.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@if (mostrarConfirmarEliminar) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirmar eliminación</h5>
+          <button type="button" class="btn-close" [disabled]="enviando" (click)="cerrarConfirmarEliminar()"></button>
+        </div>
+        <div class="modal-body">
+          ¿Deseas eliminar esta deuda pendiente?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="enviando" (click)="cerrarConfirmarEliminar()">Cancelar</button>
+          <button type="button" class="btn btn-danger" [disabled]="enviando" (click)="confirmarEliminar()">
+            {{ enviando ? 'Eliminando...' : 'Eliminar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
+
+@if (mostrarFormulario) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">{{ editando ? 'Editar Deuda' : 'Registrar Deuda' }}</h5>
+          <button type="button" class="btn-close btn-close-white" [disabled]="enviando" (click)="cerrarFormulario()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Id Socio</label>
+            <input type="number" class="form-control" [(ngModel)]="form.idSocio" placeholder="Id del socio" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Id Puesto</label>
+            <input type="number" class="form-control" [(ngModel)]="form.idPuesto" placeholder="Id del puesto" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Id Motivo</label>
+            <input type="number" class="form-control" [(ngModel)]="form.idMotivo" placeholder="Id del motivo" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Id Lote (opcional)</label>
+            <input type="number" class="form-control" [(ngModel)]="form.idLote" placeholder="Id del lote" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Monto</label>
+            <input type="number" class="form-control" [(ngModel)]="form.monto" placeholder="Monto de la deuda" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fecha</label>
+            <input type="date" class="form-control" [(ngModel)]="form.fecha" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select" [(ngModel)]="form.estado">
+              @for (estado of estadosDeuda; track estado) {
+                <option [ngValue]="estado">{{ estado }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fecha Pago (opcional)</label>
+            <input type="date" class="form-control" [(ngModel)]="form.fechaPago" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="enviando" (click)="cerrarFormulario()">Cancelar</button>
+          <button type="button" class="btn btn-primary" [disabled]="enviando" (click)="guardar()">
+            {{ enviando ? 'Guardando...' : (editando ? 'Actualizar' : 'Registrar') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
