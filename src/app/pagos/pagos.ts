@@ -1,122 +1,144 @@
 import { DatePipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgSelectComponent } from '@ng-select/ng-select';
+import { Router } from '@angular/router';
 
-class DetalleComprobante {
-  constructor(
-    public id: number,
-    public idDeuda: number,
-    public montoPagado: number,
-    public fechaRegistro: string,
-  ) {}
+interface PagoListaItem {
+  id: number;
+  fechaRegistro: string;
+  metodo: string;
+  montoAcumulado: number;
+  estado: string;
 }
 
-class Comprobante {
-  constructor(
-    public id: number,
-    public numero: string,
-    public tipo: string,
-    public fecha: string,
-    public total: number,
-    public vuelto: number,
-    public idPuesto: number,
-    public idUsuario: number | null,
-    public listaDetalle: DetalleComprobante[],
-    public seleccionado: boolean = false,
-  ) {}
+interface PagoResponse {
+  id: number;
+  fechaRegistro: string;
+  metodo: string;
+  montoAcumulado: number;
+  estado: string;
+  detalles?: Array<{
+    id: number;
+    pago: unknown;
+    comprobante: unknown;
+  }>;
+
 }
 
 @Component({
   selector: 'app-pagos',
-  imports: [DatePipe, FormsModule, NgSelectComponent],
+  imports: [DatePipe, FormsModule],
   templateUrl: './pagos.html',
   styleUrl: './pagos.css',
 })
 export class PagosComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly comprobanteUrl = 'http://localhost:9090/comprobante/listar';
+  private readonly router = inject(Router);
+  private readonly pagosUrl = 'http://localhost:9090/pago/listar';
 
-  clienteSeleccionado: number | null = null;
-  fechaPago: string = new Date().toISOString().split('T')[0];
-  montoAcumulado: number = 0;
-  metodoPagoSeleccionado: number | null = null;
-  mostrarExitoGuardado: boolean = false;
-  cargandoComprobantes: boolean = false;
-  errorComprobantes = '';
-
-  metodosPago = [
-    { id: 1, nombre: 'Efectivo' },
-    { id: 2, nombre: 'Yape' },
-    { id: 3, nombre: 'Transferencia' },
-    { id: 4, nombre: 'Tarjeta' }
-  ];
-  clientes = [
-    { id: 1, nombre: 'Juan Perez' },
-    { id: 2, nombre: 'Maria Lopez' },
-    { id: 3, nombre: 'Carlos Ruiz' },
-    { id: 4, nombre: 'Ana Torres' },
-  ];
-
-  comprobantes: Comprobante[] = [];
+  pagos: PagoListaItem[] = [];
+  filtroBusqueda = '';
+  tamanosPagina = [5, 10, 20];
+  tamanoPagina = 5;
+  paginaActual = 1;
+  cargando = false;
+  error = '';
 
   ngOnInit(): void {
-    this.listarComprobantes();
+    this.listar();
   }
 
-  listarComprobantes(): void {
-    this.cargandoComprobantes = true;
-    this.errorComprobantes = '';
+  listar(): void {
+    this.cargando = true;
+    this.error = '';
 
-    this.http.get<Comprobante[]>(this.comprobanteUrl).subscribe({
-      next: (response) => {
-        this.comprobantes = response.map((comprobante) =>
-          new Comprobante(
-            comprobante.id,
-            comprobante.numero,
-            comprobante.tipo,
-            comprobante.fecha,
-            comprobante.total,
-            comprobante.vuelto,
-            comprobante.idPuesto,
-            comprobante.idUsuario ?? null,
-            (comprobante.listaDetalle ?? []).map(
-              (detalle: any) =>
-                new DetalleComprobante(
-                  detalle.id,
-                  detalle.idDeuda,
-                  detalle.montoPagado,
-                  detalle.fechaRegistro,
-                )
-            ),
-            false,
-          )
-        );
-        this.actualizarMontoAcumulado();
-        this.cargandoComprobantes = false;
+    this.http.get<PagoResponse[]>(this.pagosUrl).subscribe({
+      next: (data) => {
+        this.pagos = (data ?? []).map((item) => this.mapearPago(item));
+        this.paginaActual = 1;
+        this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.errorComprobantes = 'No se pudo cargar la lista de comprobantes.';
-        this.cargandoComprobantes = false;
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 404) {
+          this.pagos = [];
+        } else {
+          this.error = 'No se pudo cargar la lista de pagos.';
+        }
+        this.paginaActual = 1;
+        this.cargando = false;
         this.cdr.detectChanges();
       },
     });
   }
 
-  actualizarMontoAcumulado(): void {
-    this.montoAcumulado = this.comprobantes
-      .filter((comprobante) => comprobante.seleccionado)
-      .reduce((total, comprobante) => total + comprobante.total, 0);
+  get pagosFiltrados(): PagoListaItem[] {
+    const termino = this.filtroBusqueda.trim().toLowerCase();
+    if (!termino) return this.pagos;
+
+    return this.pagos.filter((pago) => {
+      const idTexto = String(pago.id ?? '').toLowerCase();
+      const fechaTexto = pago.fechaRegistro?.toLowerCase?.() ?? '';
+      const metodoTexto = pago.metodo?.toLowerCase?.() ?? '';
+      const montoTexto = String(pago.montoAcumulado ?? '').toLowerCase();
+
+      return (
+        idTexto.includes(termino) ||
+        fechaTexto.includes(termino) ||
+        metodoTexto.includes(termino) ||
+        montoTexto.includes(termino)
+      );
+    });
   }
 
-  guardarPago(): void {
-    this.mostrarExitoGuardado = true;
+  get pagosPaginados(): PagoListaItem[] {
+    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+    return this.pagosFiltrados.slice(inicio, inicio + this.tamanoPagina);
   }
 
-  cerrarMensajeExito(): void {
-    this.mostrarExitoGuardado = false;
+  get totalPaginas(): number {
+    const total = Math.ceil(this.pagosFiltrados.length / this.tamanoPagina);
+    return total > 0 ? total : 1;
+  }
+
+  aplicarFiltros(): void {
+    this.paginaActual = 1;
+  }
+
+  cambiarTamanoPagina(): void {
+    this.paginaActual = 1;
+  }
+
+  limpiarFiltros(): void {
+    this.filtroBusqueda = '';
+    this.paginaActual = 1;
+  }
+
+  irPaginaAnterior(): void {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
+    }
+  }
+
+  irPaginaSiguiente(): void {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+    }
+  }
+
+  irARegistrarPago(): void {
+    this.router.navigate(['/pagos/registrar']);
+  }
+
+  private mapearPago(item: PagoResponse): PagoListaItem {
+    return {
+      id: item.id,
+      fechaRegistro: item.fechaRegistro ?? '',
+      metodo: item.metodo ?? '',
+      montoAcumulado: item.montoAcumulado ?? 0,
+      estado: item.estado
+    };
   }
 }

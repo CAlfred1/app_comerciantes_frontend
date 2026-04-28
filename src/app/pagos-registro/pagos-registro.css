@@ -1,0 +1,23 @@
+:host ::ng-deep .ng-select .ng-select-container {
+  background-color: #fff;
+  color: #212529;
+  min-height: 38px;
+}
+
+:host ::ng-deep .ng-select .ng-select-container .ng-value-container .ng-input > input {
+  color: #212529;
+}
+
+:host ::ng-deep .ng-select .ng-select-container .ng-placeholder {
+  color: #6c757d;
+}
+
+:host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+  color: #212529;
+}
+
+.input-disabled {
+  background-color: #ebf086;
+  color: #495057;
+  cursor: not-allowed;
+}

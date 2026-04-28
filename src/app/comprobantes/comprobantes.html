@@ -1,8 +1,8 @@
 <div class="card shadow-sm mt-2">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3 class="card-title text-primary mb-0">PAGOS</h3>
-      <button class="btn btn-primary" (click)="irARegistrarPago()">+ Registrar Pago</button>
+      <h3 class="card-title text-primary mb-0">COMPROBANTES</h3>
+      <button class="btn btn-primary" (click)="irARegistrarComprobante()">+ Registrar Comprobante</button>
     </div>
 
     @if (error) {
@@ -13,18 +13,18 @@
     }
 
     @if (cargando) {
-      <div class="alert alert-info">Cargando pagos...</div>
+      <div class="alert alert-info">Cargando comprobantes...</div>
     }
 
     <div class="row g-2 mb-3">
       <div class="col-md-8">
-        <label class="form-label mb-1">Buscar por id, fecha, metodo o monto</label>
+        <label class="form-label mb-1">Buscar por id, socio, puesto, motivo, fecha, monto o estado</label>
         <input
           type="text"
           class="form-control"
           [(ngModel)]="filtroBusqueda"
           (ngModelChange)="aplicarFiltros()"
-          placeholder="Escribe id, fecha, metodo o monto" />
+          placeholder="Escribe id, socio, puesto, motivo, fecha, monto o estado" />
       </div>
       <div class="col-md-3">
         <label class="form-label mb-1">Registros por pagina</label>
@@ -44,26 +44,30 @@
         <thead class="table-secondary">
           <tr>
             <th>#</th>
-            <th>ID PAGO</th>
-            <th>FECHA REGISTRO</th>
-            <th>METODO</th>
-            <th>MONTO ACUMULADO</th>
+            <th>ID DEUDA</th>
+            <th>SOCIO</th>
+            <th>PUESTO</th>
+            <th>MOTIVO</th>
+            <th>FECHA</th>
+            <th>MONTO</th>
             <th>ESTADO</th>
           </tr>
         </thead>
         <tbody>
-          @for (pago of pagosPaginados; track pago.id; let i = $index) {
+          @for (comprobante of comprobantesPaginados; track comprobante.id; let i = $index) {
             <tr>
               <td>{{ ((paginaActual - 1) * tamanoPagina) + i + 1 }}</td>
-              <td>{{ pago.id }}</td>
-              <td>{{ pago.fechaRegistro | date:'yyyy-MM-dd HH:mm' }}</td>
-              <td>{{ pago.metodo || '-' }}</td>
-              <td>{{ pago.montoAcumulado }}</td>
-              <td>{{ pago.estado }}</td>
+              <td>{{ comprobante.id }}</td>
+              <td>{{ comprobante.socio }}</td>
+              <td>{{ comprobante.puesto }}</td>
+              <td>{{ comprobante.motivo }}</td>
+              <td>{{ comprobante.fecha | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td>{{ comprobante.monto }}</td>
+              <td>{{ comprobante.estado }}</td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="text-center text-muted">No hay pagos que coincidan con la busqueda.</td>
+              <td colspan="8" class="text-center text-muted">No hay registros para comprobantes que coincidan con la busqueda.</td>
             </tr>
           }
         </tbody>
@@ -72,9 +76,9 @@
 
     <div class="d-flex justify-content-between align-items-center">
       <span class="text-muted small">
-        Mostrando {{ pagosPaginados.length }} de {{ pagosFiltrados.length }} registros
+        Mostrando {{ comprobantesPaginados.length }} de {{ comprobantesFiltrados.length }} registros
       </span>
-      <div class="btn-group" role="group" aria-label="Paginacion pagos">
+      <div class="btn-group" role="group" aria-label="Paginacion comprobantes">
         <button class="btn btn-outline-primary" [disabled]="paginaActual === 1" (click)="irPaginaAnterior()">
           Anterior
         </button>

@@ -1,0 +1,218 @@
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h3 class="card-title text-primary mb-1">FORMULARIO PAGO</h3>
+          <p class="card-text mb-0">REGISTRO DE PAGO</p>
+        </div>
+        <button class="btn btn-outline-secondary" type="button" (click)="volverAlListado()">
+          Volver a pagos
+        </button>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-4 mb-1">
+          <p>SOCIO</p>
+        </div>
+        <div class="col-lg-4 mb-1">
+          <p>FECHA DE PAGO</p>
+        </div>
+        <div class="col-lg-4 mb-1"></div>
+
+        <div class="col-lg-4 mb-1">
+          <ng-select
+            [items]="socios"
+            bindLabel="etiqueta"
+            bindValue="id"
+            placeholder="Buscar socio"
+            [searchable]="true"
+            [clearable]="true"
+            [(ngModel)]="socioSeleccionado">
+          </ng-select>
+        </div>
+        <div class="col-lg-4 mb-1">
+          <input type="date" class="form-control" [(ngModel)]="fechaPago" />
+        </div>
+        <div class="col-lg-4 mb-1"></div>
+
+        <div class="col-lg-4 mb-1">
+          <p>MONTO ACUMULADO</p>
+        </div>
+        <div class="col-lg-4 mb-1">
+          <p>METODO PAGO</p>
+        </div>
+        <div class="col-lg-4 mb-1"></div>
+        <div class="col-lg-4 mb-1">
+          <input class="form-control input-disabled" [(ngModel)]="montoAcumulado" readonly />
+        </div>
+        <div class="col-lg-4">
+          <select class="form-select" [(ngModel)]="metodoPagoSeleccionado">
+            <option [ngValue]="null">Seleccione un metodo</option>
+            @for (metodo of metodosPago; track metodo.id) {
+              <option [ngValue]="metodo.id">{{ metodo.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive mt-4">
+        <div class="small text-muted mb-2">
+          Registros cargados: {{ comprobantes.length }}
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-8">
+            <label class="form-label mb-1">Buscar por fecha, comprobante, tipo, puesto o monto</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="filtroBusqueda"
+              (ngModelChange)="aplicarFiltros()"
+              placeholder="Escribe fecha, numero de comprobante, tipo, puesto o monto" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label mb-1">Registros por pagina</label>
+            <select class="form-select" [(ngModel)]="tamanoPagina" (ngModelChange)="cambiarTamanoPagina()">
+              @for (tamano of tamanosPagina; track tamano) {
+                <option [ngValue]="tamano">{{ tamano }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-1 d-flex align-items-end">
+            <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">Limpiar</button>
+          </div>
+        </div>
+
+        @if (cargandoComprobantes) {
+          <div class="alert alert-info mb-3" role="alert">
+            Cargando comprobantes...
+          </div>
+        }
+
+        @if (errorComprobantes) {
+          <div class="alert alert-danger mb-3" role="alert">
+            {{ errorComprobantes }}
+          </div>
+        }
+
+        <table class="table table-bordered table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th></th>
+              <th>#</th>
+              <th>FECHA</th>
+              <th>NRO. COMPROBANTE</th>
+              <th>DESCRIPCION</th>
+              <th>MONTO</th>
+              <th>ESTADO</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (comprobante of comprobantesPaginados; track comprobante.id; let i = $index) {
+              <tr>
+                <td>
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="comprobante.seleccionado"
+                    (ngModelChange)="actualizarMontoAcumulado()"
+                  />
+                </td>
+                <td>{{ ((paginaActual - 1) * tamanoPagina) + i + 1 }}</td>
+                <td>{{ comprobante.fecha | date:'yyyy-MM-dd HH:mm' }}</td>
+                <td>{{ comprobante.numero }}</td>
+                <td>{{ comprobante.tipo }}</td>
+                <td>{{ comprobante.total }}</td>
+                <td>{{ comprobante.estado }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted">No hay comprobantes que coincidan con la busqueda.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted small">
+          Mostrando {{ comprobantesPaginados.length }} de {{ comprobantesFiltrados.length }} registros
+        </span>
+        <div class="btn-group" role="group" aria-label="Paginacion comprobantes">
+          <button class="btn btn-outline-primary" [disabled]="paginaActual === 1" (click)="irPaginaAnterior()">
+            Anterior
+          </button>
+          <button class="btn btn-outline-secondary" disabled>
+            Pagina {{ paginaActual }} de {{ totalPaginas }}
+          </button>
+          <button
+            class="btn btn-outline-primary"
+            [disabled]="paginaActual >= totalPaginas"
+            (click)="irPaginaSiguiente()">
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button
+          class="btn btn-success"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#confirmarPagoModal">
+          Guardar
+        </button>
+        <button class="btn btn-outline-secondary" type="button" (click)="volverAlListado()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="confirmarPagoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar pago</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        Deseas guardar este pago?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          data-bs-dismiss="modal"
+          (click)="guardarPago()">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (mostrarExitoGuardado) {
+  <div class="modal fade show d-block" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">Pago registrado</h5>
+        </div>
+        <div class="modal-body">
+          Se guardo correctamente.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" (click)="cerrarMensajeExito()">
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
