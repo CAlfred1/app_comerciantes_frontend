@@ -1,0 +1,35 @@
+<div class="card shadow">
+  <div class="card-header bg-warning">
+    <h5 class="mb-0">Editar Motivo de Cobro</h5>
+  </div>
+
+  <div class="card-body">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="actualizar()">
+
+      <div class="mb-3">
+        <label>Descripción</label>
+
+        <input
+          type="text"
+          class="form-control"
+          formControlName="descripcion">
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-warning me-2">
+        Actualizar
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        routerLink="/motivos-cobro">
+        Cancelar
+      </button>
+
+    </form>
+  </div>
+</div>

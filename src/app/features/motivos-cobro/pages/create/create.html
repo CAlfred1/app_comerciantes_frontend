@@ -1,0 +1,30 @@
+<div class="card shadow">
+  <div class="card-header bg-success text-white">
+    <h5 class="mb-0">Nuevo Motivo de Cobro</h5>
+  </div>
+
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+
+      <div class="mb-3">
+        <label>Descripción</label>
+        <input
+          type="text"
+          class="form-control"
+          formControlName="descripcion">
+      </div>
+
+      <button type="submit" class="btn btn-success me-2">
+        Guardar
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        routerLink="/motivos-cobro">
+        Cancelar
+      </button>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<div class="card shadow">
+  <div class="card-header bg-success text-white">
+    <h5 class="mb-0">Nuevo Pago</h5>
+  </div>
+
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+
+      <div class="mb-3">
+        <label>Método de pago</label>
+
+        <select
+          class="form-control"
+          formControlName="metodo">
+
+          <option value="">Seleccione</option>
+          <option
+            *ngFor="let metodo of metodosPago"
+            [value]="metodo">
+
+            {{ metodo }}
+
+          </option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label>Monto acumulado</label>
+
+        <input
+          type="number"
+          class="form-control"
+          formControlName="montoAcumulado">
+      </div>
+
+      <div class="mb-3">
+        <label>ID Comprobante 1</label>
+
+        <input
+          type="number"
+          class="form-control"
+          formControlName="idComprobante1">
+      </div>
+
+      <div class="mb-3">
+        <label>ID Comprobante 2 (Opcional)</label>
+
+        <input
+          type="number"
+          class="form-control"
+          formControlName="idComprobante2">
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-success me-2">
+        Guardar
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        routerLink="/pagos">
+        Cancelar
+      </button>
+
+    </form>
+  </div>
+</div>

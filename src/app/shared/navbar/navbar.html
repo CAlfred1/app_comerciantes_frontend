@@ -1,0 +1,37 @@
+<nav class="premium-navbar">
+
+  <div class="left-section">
+    <h4 class="system-title mb-0">
+      Panel Administrativo
+    </h4>
+
+    <small class="system-subtitle">
+      {{ fechaActual | date:'fullDate' }}
+    </small>
+  </div>
+
+  <div class="right-section">
+
+    <div class="user-info text-end">
+      <div class="user-name">
+        {{ nombreUsuario }}
+      </div>
+
+      <small class="user-role">
+        {{ rolUsuario }}
+      </small>
+    </div>
+
+    <div class="avatar-circle">
+      {{ nombreUsuario.charAt(0).toUpperCase() }}
+    </div>
+
+    <button
+      class="btn btn-danger btn-sm logout-btn"
+      (click)="logout()">
+      Salir
+    </button>
+
+  </div>
+
+</nav>

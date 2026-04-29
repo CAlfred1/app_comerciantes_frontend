@@ -1,0 +1,130 @@
+<div class="card shadow">
+
+  <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Pagos</h5>
+
+    <button
+      class="btn btn-light"
+      routerLink="/pagos/nuevo">
+      Nuevo Pago
+    </button>
+  </div>
+
+  <div class="card-body">
+
+    <!-- FILTROS -->
+    <div class="row g-2 mb-3">
+
+      <div class="col-md-8">
+        <label>Buscar por id, fecha, método o monto</label>
+
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="currentPage = 1"
+          placeholder="Escribe id, fecha o método">
+      </div>
+
+      <div class="col-md-2">
+        <label>Registros por página</label>
+
+        <select
+          class="form-select"
+          [(ngModel)]="pageSize"
+          (change)="currentPage = 1">
+
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="15">15</option>
+          <option [value]="20">20</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 d-flex align-items-end">
+        <button
+          class="btn btn-secondary w-100"
+          (click)="limpiar()">
+          Limpiar
+        </button>
+      </div>
+
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="text-center py-4">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- TABLA -->
+    <div *ngIf="!loading" class="table-responsive">
+
+      <table class="table table-hover table-striped">
+
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>ID</th>
+            <th>Fecha Registro</th>
+            <th>Método</th>
+            <th>Monto</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of pagosPaginados; let i = index">
+
+            <td>
+              {{ (currentPage - 1) * pageSize + i + 1 }}
+            </td>
+
+            <td>{{ item.id }}</td>
+            <td>{{ item.fechaRegistro }}</td>
+            <td>{{ item.metodo }}</td>
+            <td>S/ {{ item.montoAcumulado }}</td>
+            <td>{{ item.detalles.length }}</td>
+
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div
+      class="d-flex justify-content-between align-items-center mt-3">
+
+      <small>
+        Mostrando {{ pagosPaginados.length }}
+        de {{ pagosFiltrados.length }} registros
+      </small>
+
+      <div>
+
+        <button
+          class="btn btn-outline-primary btn-sm me-2"
+          (click)="anterior()"
+          [disabled]="currentPage === 1">
+          Anterior
+        </button>
+
+        <span class="me-2">
+          Página {{ currentPage }}
+          de {{ totalPages || 1 }}
+        </span>
+
+        <button
+          class="btn btn-outline-primary btn-sm"
+          (click)="siguiente()"
+          [disabled]="currentPage >= totalPages">
+          Siguiente
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

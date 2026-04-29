@@ -1,0 +1,45 @@
+.sidebar-container {
+  width: 280px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #111827, #1f2937);
+  color: white;
+  padding: 24px 18px;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.25);
+}
+
+.brand-section {
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 18px;
+}
+
+.brand-title {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.brand-subtitle {
+  color: #9ca3af;
+}
+
+.sidebar-link {
+  color: #e5e7eb !important;
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: all 0.25s ease;
+  font-weight: 500;
+}
+
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.08);
+  transform: translateX(4px);
+  color: white !important;
+}
+
+.sidebar-link.active,
+.sidebar-link:focus {
+  background: #2563eb;
+  color: white !important;
+}

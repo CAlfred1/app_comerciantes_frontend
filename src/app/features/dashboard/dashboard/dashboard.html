@@ -1,0 +1,140 @@
+<div class="container-fluid">
+
+  <!-- Header -->
+  <div class="hero-card mb-4">
+    <div>
+      <h2 class="mb-1 fw-bold">
+        Bienvenido {{ usuario }} 👋
+      </h2>
+
+      <p class="mb-0 opacity-75">
+        Gestión integral de comerciantes y operaciones
+      </p>
+    </div>
+
+    <div class="hero-date">
+      {{ fechaActual | date:'fullDate' }}
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-4 mb-4">
+
+    <div class="col-md-3">
+      <div class="kpi-card blue">
+        <small>Socios</small>
+        <h2>{{ totalSocios }}</h2>
+        <span>Registrados</span>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card green">
+        <small>Puestos</small>
+        <h2>{{ totalPuestos }}</h2>
+        <span>Activos</span>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card red">
+        <small>Deudas</small>
+        <h2>{{ totalDeudas }}</h2>
+        <span>Pendientes</span>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card dark">
+        <small>Usuarios</small>
+        <h2>{{ totalUsuarios }}</h2>
+        <span>Sistema</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick actions -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+
+      <h5 class="fw-bold mb-3">
+        Accesos Rápidos
+      </h5>
+
+      <div class="quick-grid">
+
+        <a routerLink="/socios" class="quick-btn">
+          👥 Socios
+        </a>
+
+        <a routerLink="/puestos" class="quick-btn">
+          🏪 Puestos
+        </a>
+
+        <a routerLink="/deudas" class="quick-btn">
+          💰 Deudas
+        </a>
+
+        <a routerLink="/pagos" class="quick-btn">
+          💳 Pagos
+        </a>
+
+        <a routerLink="/comprobantes" class="quick-btn">
+          🧾 Comprobantes
+        </a>
+
+        <a routerLink="/reportes/caja" class="quick-btn">
+          📊 Reportes
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="row g-4">
+
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="fw-bold">Estado del Sistema</h5>
+
+          <p class="text-success mb-1">
+            ● Operativo correctamente
+          </p>
+
+          <small class="text-muted">
+            Todos los módulos respondiendo con normalidad.
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="fw-bold">Resumen Diario</h5>
+
+          <p class="mb-1">
+            Pagos procesados:
+            <strong>{{ totalPagos }}</strong>
+          </p>
+
+          <p class="mb-1">
+            Comprobantes emitidos:
+            <strong>{{ totalComprobantes }}</strong>
+          </p>
+
+          <p class="mb-0">
+            Caja estimada:
+            <strong>{{ cajaMensual | number:'1.2-2' }}</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

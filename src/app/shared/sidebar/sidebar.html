@@ -1,0 +1,68 @@
+<div class="sidebar-container">
+
+  <div class="brand-section">
+    <h3 class="brand-title">Comerciantes</h3>
+    <small class="brand-subtitle">Sistema Administrativo</small>
+  </div>
+
+  <ul class="nav flex-column mt-4">
+
+    <li class="nav-item">
+      <a routerLink="/dashboard" class="nav-link sidebar-link">
+        🏠 Dashboard
+      </a>
+    </li>
+
+    @if (esAdmin()) {
+    <li class="nav-item">
+      <a routerLink="/usuarios" class="nav-link sidebar-link">
+        👤 Usuarios
+      </a>
+    </li>
+    }
+
+    <li class="nav-item">
+      <a routerLink="/socios" class="nav-link sidebar-link">
+        👥 Socios
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/puestos" class="nav-link sidebar-link">
+        🏪 Puestos
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/motivos-cobro" class="nav-link sidebar-link">
+        📌 Motivos Cobro
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/comprobantes" class="nav-link sidebar-link">
+        🧾 Comprobantes
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/deudas" class="nav-link sidebar-link">
+        💰 Deudas
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/pagos" class="nav-link sidebar-link">
+        💳 Pagos
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a routerLink="/reportes/caja" class="nav-link sidebar-link">
+        📊 Reporte Caja
+      </a>
+    </li>
+
+  </ul>
+
+</div>

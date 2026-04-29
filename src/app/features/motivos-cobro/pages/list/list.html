@@ -1,0 +1,45 @@
+<div class="card shadow">
+  <div class="card-header bg-primary text-white">
+    <h5 class="mb-0">Motivos de Cobro</h5>
+
+    <button
+      class="btn btn-light"
+      routerLink="/motivos-cobro/nuevo">
+      Nuevo Motivo
+    </button>
+  </div>
+
+  <div class="card-body">
+
+    <div *ngIf="loading" class="text-center py-4">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let item of motivos">
+            <td>{{ item.id }}</td>
+            <td>{{ item.descripcion }}</td>
+            <td>
+              <button
+                class="btn btn-warning btn-sm"
+                [routerLink]="['/motivos-cobro/editar', item.id]">
+                Editar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>

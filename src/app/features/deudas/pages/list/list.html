@@ -1,0 +1,212 @@
+<div class="card shadow-sm mt-2">
+  <div class="card-body">
+
+    <div class="d-flex justify-content-between mb-3">
+      <h3 class="text-primary">DEUDAS</h3>
+
+      <button class="btn btn-primary" (click)="nuevo()">
+        + Registrar
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle">
+
+        <thead class="table-secondary">
+          <tr>
+            <th>#</th>
+            <th>Socio</th>
+            <th>Puesto</th>
+            <th>Motivo</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Pago</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of deudas; track item.id; let i = $index) {
+
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.socio.nombre }}</td>
+            <td>{{ item.puesto.codigo }}</td>
+            <td>{{ item.motivo.descripcion }}</td>
+            <td>S/ {{ item.monto }}</td>
+            <td>{{ item.fecha }}</td>
+
+            <td>
+              <span
+                class="badge"
+                [class.bg-warning]="item.estado=='PENDIENTE'"
+                [class.bg-success]="item.estado=='PAGADA'">
+                {{ item.estado }}
+              </span>
+            </td>
+
+            <td>{{ item.fechaPago || '-' }}</td>
+
+            <td>
+
+              <button
+                class="btn btn-sm btn-warning me-1"
+                [disabled]="item.estado=='PAGADA'"
+                (click)="editar(item)">
+                Editar
+              </button>
+
+              <button
+                class="btn btn-sm btn-danger"
+                [disabled]="item.estado=='PAGADA'"
+                (click)="eliminar(item.id,item.estado)">
+                Eliminar
+              </button>
+
+            </td>
+
+          </tr>
+
+          } @empty {
+
+          <tr>
+            <td colspan="9" class="text-center">
+              Sin registros
+            </td>
+          </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+</div>
+
+@if (mostrarModal) {
+
+<div class="modal fade show d-block">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          {{ editando ? 'Editar Deuda' : 'Registrar Deuda' }}
+        </h5>
+
+        <button class="btn-close btn-close-white"
+          (click)="cerrar()"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="mb-2">
+          <label>Socio</label>
+
+          <select class="form-select"
+            [(ngModel)]="form.idSocio">
+
+            <option [ngValue]="null">Seleccione</option>
+
+            @for (s of socios; track s.id) {
+            <option [ngValue]="s.id">
+              {{ s.nombre }}
+            </option>
+            }
+
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label>Puesto</label>
+
+          <select class="form-select"
+            [(ngModel)]="form.idPuesto">
+
+            <option [ngValue]="null">Seleccione</option>
+
+            @for (p of puestos; track p.id) {
+            <option [ngValue]="p.id">
+              {{ p.codigo }}
+            </option>
+            }
+
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label>Motivo</label>
+
+          <select class="form-select"
+            [(ngModel)]="form.idMotivo">
+
+            <option [ngValue]="null">Seleccione</option>
+
+            @for (m of motivos; track m.id) {
+            <option [ngValue]="m.id">
+              {{ m.descripcion }}
+            </option>
+            }
+
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label>Monto</label>
+          <input type="number"
+            class="form-control"
+            [(ngModel)]="form.monto">
+        </div>
+
+        <div class="mb-2">
+          <label>Fecha</label>
+          <input type="date"
+            class="form-control"
+            [(ngModel)]="form.fecha">
+        </div>
+
+        <div class="mb-2">
+          <label>Estado</label>
+
+          <select class="form-select"
+            [(ngModel)]="form.estado">
+
+            <option value="PENDIENTE">PENDIENTE</option>
+            <option value="PAGADA">PAGADA</option>
+
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label>Fecha Pago</label>
+          <input type="date"
+            class="form-control"
+            [(ngModel)]="form.fechaPago">
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button class="btn btn-secondary"
+          (click)="cerrar()">
+          Cancelar
+        </button>
+
+        <button class="btn btn-primary"
+          (click)="guardar()">
+          Guardar
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show"></div>
+
+}

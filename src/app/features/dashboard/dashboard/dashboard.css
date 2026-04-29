@@ -1,0 +1,71 @@
+.hero-card {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  border-radius: 18px;
+  padding: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 12px 30px rgba(37,99,235,.25);
+}
+
+.hero-date {
+  font-size: 14px;
+  opacity: .9;
+}
+
+.kpi-card {
+  color: white;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.08);
+  transition: all .25s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-6px);
+}
+
+.kpi-card h2 {
+  margin: 8px 0;
+  font-size: 34px;
+  font-weight: bold;
+}
+
+.blue {
+  background: linear-gradient(135deg,#3b82f6,#1d4ed8);
+}
+
+.green {
+  background: linear-gradient(135deg,#10b981,#059669);
+}
+
+.red {
+  background: linear-gradient(135deg,#ef4444,#dc2626);
+}
+
+.dark {
+  background: linear-gradient(135deg,#374151,#111827);
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(170px,1fr));
+  gap: 12px;
+}
+
+.quick-btn {
+  text-decoration: none;
+  background: #f3f4f6;
+  color: #111827;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  transition: .2s ease;
+}
+
+.quick-btn:hover {
+  background: #2563eb;
+  color: white;
+}

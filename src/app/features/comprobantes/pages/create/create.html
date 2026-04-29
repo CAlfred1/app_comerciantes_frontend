@@ -1,0 +1,66 @@
+<div class="card shadow">
+  <div class="card-header bg-success text-white">
+    <h5 class="mb-0">
+      {{ editando ? 'Editar Comprobante' : 'Nuevo Comprobante' }}
+    </h5>
+  </div>
+
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+
+      <div class="mb-3">
+        <label>Número</label>
+        <input
+          type="text"
+          class="form-control"
+          formControlName="numero">
+      </div>
+
+      <div class="mb-3">
+        <label>Fecha</label>
+        <input
+          type="datetime-local"
+          class="form-control"
+          formControlName="fecha">
+      </div>
+
+      <div class="mb-3">
+        <label>Tipo</label>
+        <select
+          class="form-control"
+          formControlName="tipo">
+          <option value="BOLETA">BOLETA</option>
+          <option value="FACTURA">FACTURA</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label>Total</label>
+        <input
+          type="number"
+          class="form-control"
+          formControlName="total">
+      </div>
+
+      <div class="mb-3">
+        <label>Vuelto</label>
+        <input
+          type="number"
+          class="form-control"
+          formControlName="vuelto">
+      </div>
+
+      <button type="submit" class="btn btn-success me-2">
+        Guardar
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        routerLink="/comprobantes">
+        Cancelar
+      </button>
+
+    </form>
+  </div>
+</div>

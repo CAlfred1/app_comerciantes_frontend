@@ -1,0 +1,155 @@
+<div class="card shadow">
+
+  <div class="card-header bg-dark text-white">
+    <h5 class="mb-0">Reporte de Caja</h5>
+  </div>
+
+  <div class="card-body">
+
+    <!-- FILTRO POR RANGO -->
+    <h6 class="mb-3">Reporte por rango de fechas</h6>
+
+    <div class="row g-2 mb-4">
+      <div class="col-md-3">
+        <label>Fecha Inicio</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="fechaInicio">
+      </div>
+
+      <div class="col-md-3">
+        <label>Fecha Fin</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="fechaFin">
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button
+          class="btn btn-primary w-100"
+          (click)="consultarRango()">
+          Consultar
+        </button>
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button
+          class="btn btn-danger w-100"
+          (click)="pdfRango()">
+          Descargar PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- FILTRO MENSUAL -->
+    <h6 class="mb-3">Reporte mensual</h6>
+
+    <div class="row g-2 mb-4">
+      <div class="col-md-3">
+        <label>Año</label>
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="anio">
+      </div>
+
+      <div class="col-md-3">
+        <label>Mes</label>
+        <input
+          type="number"
+          min="1"
+          max="12"
+          class="form-control"
+          [(ngModel)]="mes">
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button
+          class="btn btn-success w-100"
+          (click)="consultarMensual()">
+          Consultar
+        </button>
+      </div>
+
+      <div class="col-md-3 d-flex align-items-end">
+        <button
+          class="btn btn-danger w-100"
+          (click)="pdfMensual()">
+          Descargar PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="text-center py-4">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div *ngIf="reporte">
+
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="alert alert-primary">
+            <strong>Total General:</strong><br>
+            S/ {{ reporte.totalGeneral }}
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="alert alert-success">
+            <strong>Cantidad Comprobantes:</strong><br>
+            {{ reporte.cantidadComprobantes }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Totales por método -->
+      <h6>Totales por Tipo</h6>
+
+      <ul class="list-group mb-4">
+        <li
+          class="list-group-item"
+          *ngFor="let item of reporte.totalPorMetodoPago | keyvalue">
+
+          {{ item.key }} :
+          <strong>S/ {{ item.value }}</strong>
+
+        </li>
+      </ul>
+
+      <!-- TABLA -->
+      <h6>Comprobantes</h6>
+
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Número</th>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let c of reporte.comprobantes">
+              <td>{{ c.id }}</td>
+              <td>{{ c.numero }}</td>
+              <td>{{ c.fecha }}</td>
+              <td>{{ c.tipo }}</td>
+              <td>S/ {{ c.total }}</td>
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</div>
